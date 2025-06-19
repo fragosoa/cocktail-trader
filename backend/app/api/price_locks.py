@@ -5,6 +5,5 @@ from flask import Blueprint, jsonify, request
 price_lock_bp = Blueprint('price_lock', __name__)
 
 @price_lock_bp.route('/price_lock', methods=['GET'])
-#@validate_json({'drink_id': str, 'quantity': int})
 def price_lock():
     return jsonify({'response': 'called price_lock service' }), 200

@@ -1,4 +1,4 @@
-from app import db
+from app.extensions import db
 
 class Drink(db.Model):
     __tablename__ = 'drinks'
@@ -14,6 +14,5 @@ class Drink(db.Model):
         return {
             'id': str(self.id),
             'name': self.name,
-            'price': self.price,
-            'price_discount': self.price_discount
+            'price': self.price
         }
