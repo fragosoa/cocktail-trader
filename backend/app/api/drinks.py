@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from app.models.drink import Drink
-#from app.services.order_service import OrderService
+from app.services.drinks_service import DrinkService
 #from app.utils.decorators import validate_json
 
 drinks_bp = Blueprint('drinks', __name__)
@@ -9,7 +9,7 @@ drinks_bp = Blueprint('drinks', __name__)
 def get_all_drinks():
     """Get all drinks from the database."""
     try:
-        drinks = Drink.query.all()
+        drinks = DrinkService.get_all_drinks()
         
         # Format the drinks data
         drinks_data = [{
