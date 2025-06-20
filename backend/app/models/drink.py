@@ -7,6 +7,8 @@ class Drink(db.Model):
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
 
+    order_items = db.relationship('OrderItem', back_populates='drink', lazy='dynamic')
+
     def __repr__(self):
         return f"<Drink {self.name}>"
 
