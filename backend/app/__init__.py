@@ -1,17 +1,18 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from app.api import orders_bp, price_lock_bp, drinks_bp
-from app.extensions import db
+from app.extensions import db, init_redis
+from app.config import config
 
-def create_app(config_name='Development'):
+def create_app(config_name='development'):
     app = Flask(__name__)
     
     # Load configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://myuser:mypassword@localhost:5432/mydatabase'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config.from_object(config.get(config_name.lower(), config['default']))
 
     # Initialize extensions
     db.init_app(app)
+    init_redis(app)
 
     # Register blueprints
     app.register_blueprint(orders_bp, url_prefix='/api')
