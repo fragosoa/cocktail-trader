@@ -5,6 +5,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     REDIS_URL = 'redis://localhost:6379/0'
     PRICE_LOCK_EXPIRATION_SECONDS = 60  # Valor por defecto, puedes cambiarlo
+    KAFKA_BOOTSTRAP_SERVERS = 'localhost:9092'  # Configuración para Kafka
 
 class DevelopmentConfig(Config):
     DEBUG = True

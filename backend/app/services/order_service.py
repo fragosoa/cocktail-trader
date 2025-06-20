@@ -47,7 +47,8 @@ class OrderService:
                 'locked_price_used': locked_price_used
             })
         
-        order = OrderService._create_transaction(drinks_to_process)
+        #order = OrderService._create_transaction(drinks_to_process)
+        order = OrderService._create_transaction_async(drinks_to_process)
         return order
     
     @staticmethod
@@ -61,7 +62,7 @@ class OrderService:
 
     @staticmethod
     def _create_transaction(drinks):
-        # TODO: publish to a kafka topic
+        # TODO: publish to a kafka topic. We should push to process_order topic
         
         table = Table.query.filter_by(number=5).first()
         new_order = Order(
@@ -86,3 +87,16 @@ class OrderService:
         db.session.add(new_order)
         db.session.commit()
         return jsonify({'drinks_list': drinks}), 200
+    
+    @staticmethod
+    def _create_transaction_async(drinks):
+        # Publicar mensaje de prueba en Kafka
+        kafka_producer = app.extensions.kafka_producer
+        
+        if kafka_producer is None:
+            return {'error': 'Kafka producer not initialized'}
+        topic = 'create_order'
+        message = 'hola mundo'
+        kafka_producer.produce(topic, value=message.encode('utf-8'))
+        kafka_producer.flush()
+        return jsonify({'status': 'Mensaje publicado en Kafka'}), 200
