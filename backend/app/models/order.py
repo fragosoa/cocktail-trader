@@ -10,7 +10,6 @@ class Order(db.Model):
     table = db.relationship('Table', back_populates='orders')
 
     status = db.Column(db.String(20), nullable=False, default='pending')
-    locked_price_used = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
     items = db.relationship('OrderItem', back_populates='order', lazy='dynamic')

@@ -32,11 +32,10 @@ def init_db():
         table = Table.query.filter_by(number=5).first()
         new_order = Order(
             table=table,
-            status='pending',
-            locked_price_used=False
+            status='pending'
         )
         for drink in drinks:
-            item = OrderItem(drink=drink, quantity=2, unit_price=drink.price, order=new_order)
+            item = OrderItem(drink=drink, quantity=2, unit_price=drink.price, order=new_order, locked_price_used=False)
             new_order.items.append(item)
         new_order.calculate_total()
         

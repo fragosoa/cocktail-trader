@@ -32,11 +32,15 @@ def get_all_orders():
 #@validate_json({'drink_id': str, 'quantity': int})
 def create_order():
     data = request.get_json()
+    if 'drinks' not in data or not isinstance(data['drinks'], list) or len(data['drinks']) == 0:
+        return jsonify({'error': 'El campo "drinks" debe ser un array no vacío'}), 400
+    for drink in data['drinks']:
+        if not all(field in drink for field in ['drink_id', 'quantity']):
+            return jsonify({'error': 'Cada elemento en "drinks" debe tener drink_id, quantity'}), 400
 
-    order = OrderService.create_order(
-        locked_price_used=data.get('locked_price_used', False)
-    )
-    return jsonify({
-        'response': 'called get_orders service',
+    order = OrderService.create_order(data)
+    '''return jsonify({
+        'response': 'successfully created',
         'order': str(order.id)
-    }), 200
+    }), 200'''
+    return order
