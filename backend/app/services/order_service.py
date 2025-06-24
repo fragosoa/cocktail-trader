@@ -6,11 +6,15 @@ from app.models.order_item import OrderItem
 import app.extensions
 import uuid
 from flask import jsonify
+import json
+from confluent_kafka import KafkaException
 
 class OrderService:
     @staticmethod
     def create_order(data):
         drinks = data.get('drinks')
+        table_number = data.get('drinks')[0].get('table_number', 5)
+
         redis_client = app.extensions.redis_client
         if redis_client is None:
             return jsonify({'error': 'Redis client not initialized'}), 500
@@ -46,9 +50,12 @@ class OrderService:
                 'current_price': current_price,
                 'locked_price_used': locked_price_used
             })
+        order_manifest = {
+            'table_number': table_number,
+            'drinks': drinks_to_process
+        }
         
-        #order = OrderService._create_transaction(drinks_to_process)
-        order = OrderService._create_transaction_async(drinks_to_process)
+        order = OrderService._create_transaction_async(order_manifest)
         return order
     
     @staticmethod
@@ -61,10 +68,12 @@ class OrderService:
             raise Exception(f"Error fetching orders: {str(e)}")
 
     @staticmethod
-    def _create_transaction(drinks):
+    def submit_transaction(order_details):
         # TODO: publish to a kafka topic. We should push to process_order topic
-        
-        table = Table.query.filter_by(number=5).first()
+        table_number = order_details.get('table_number', 5)
+        table = Table.query.filter_by(number=table_number).first()
+        drinks = order_details.get('drinks', [])
+
         new_order = Order(
             table=table,
             status='pending'
@@ -89,14 +98,20 @@ class OrderService:
         return jsonify({'drinks_list': drinks}), 200
     
     @staticmethod
-    def _create_transaction_async(drinks):
+    def _create_transaction_async(order_manifest):
         # Publicar mensaje de prueba en Kafka
         kafka_producer = app.extensions.kafka_producer
         
         if kafka_producer is None:
             return {'error': 'Kafka producer not initialized'}
-        topic = 'create_order'
-        message = 'hola mundo'
-        kafka_producer.produce(topic, value=message.encode('utf-8'))
-        kafka_producer.flush()
-        return jsonify({'status': 'Mensaje publicado en Kafka'}), 200
+        
+        try:
+            kafka_producer.produce('create_order', value=json.dumps(order_manifest).encode('utf-8'))
+            kafka_producer.flush()
+        except KafkaException as e:
+            return jsonify({'error': f'Failed to produce message: {str(e)}'}), 500
+        except Exception as e:
+            return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
+        
+        
+        return jsonify({'status': 'Order received'}), 200
