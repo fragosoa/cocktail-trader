@@ -3,6 +3,7 @@ from app.models.order import Order
 from app.models.drink import Drink
 from app.models.table import Table
 from app.models.order_item import OrderItem
+from app.models.price_history import PriceHistory
 import app.extensions
 import uuid
 from flask import jsonify
@@ -69,7 +70,7 @@ class OrderService:
 
     @staticmethod
     def submit_transaction(order_details):
-        # TODO: publish to a kafka topic. We should push to process_order topic
+        
         table_number = order_details.get('table_number', 5)
         table = Table.query.filter_by(number=table_number).first()
         drinks = order_details.get('drinks', [])
@@ -92,6 +93,14 @@ class OrderService:
                 locked_price_used=locked_price_used
             )
             new_order.items.append(item)
+
+            price_history = PriceHistory(
+                drink_id=drink_id,
+                price=current_price,
+                quantity=quantity
+            )
+            db.session.add(price_history)
+            
         new_order.calculate_total()
         db.session.add(new_order)
         db.session.commit()
