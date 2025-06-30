@@ -10,16 +10,11 @@ def get_all_orders():
     """Get all orders from the database."""
     try:
         orders = OrderService.get_all_orders()  # Assuming this method exists in OrderService
-        orders_data = [{
-            'id': str(order.id),
-            'status': order.status,
-            'locked_price_used': order.locked_price_used
-        } for order in orders]
         
         return jsonify({
             'status': 'success',
-            'data': orders_data,
-            'count': len(orders_data)
+            'data': orders,
+            'count': len(orders)
         }), 200
         
     except Exception as e:

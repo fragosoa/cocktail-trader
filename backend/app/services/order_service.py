@@ -124,3 +124,37 @@ class OrderService:
         
         
         return jsonify({'status': 'Order received'}), 200
+    
+    @staticmethod
+    def get_all_orders():
+        """Get all orders from the database in the required frontend format."""
+        try:
+            orders = Order.query.order_by(Order.created_at.desc()).all()
+            result = []
+            for idx, order in enumerate(orders, start=1):
+                order_number = f"#{idx:03d}"
+                customer_name = f"Table {order.table.number}" if order.table else "Unknown"
+                created_at = order.created_at.isoformat() if order.created_at else None
+                total_amount = order.total_price if hasattr(order, 'total_price') else sum(item.unit_price * item.quantity for item in order.items)
+                items = []
+                for item in order.items:
+                    drink = item.drink
+                    items.append({
+                        'id': str(item.id),
+                        'name': drink.name if drink else 'Unknown',
+                        'quantity': item.quantity,
+                        'price': item.unit_price,
+                        'status': item.status if item.status else 'pending',
+                    })
+                result.append({
+                    'id': str(order.id),
+                    'orderNumber': order_number,
+                    'customerName': customer_name,
+                    'status': order.status,
+                    'createdAt': created_at,
+                    'totalAmount': total_amount,
+                    'items': items
+                })
+            return result
+        except Exception as e:
+            raise Exception(f"Error fetching orders: {str(e)}")

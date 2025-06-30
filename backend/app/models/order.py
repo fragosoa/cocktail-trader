@@ -1,4 +1,9 @@
 from app.extensions import db
+from sqlalchemy import Enum
+
+class OrderStatus(Enum):
+    PENDING = 'pending'
+    COMPLETED = 'completed'
 
 class Order(db.Model):
     __tablename__ = 'orders'
@@ -9,7 +14,7 @@ class Order(db.Model):
     table_number = db.Column(db.Integer, db.ForeignKey('tables.number'), nullable=False)
     table = db.relationship('Table', back_populates='orders')
 
-    status = db.Column(db.String(20), nullable=False, default='pending')
+    status = db.Column(db.String(20), default='pending', nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
     items = db.relationship('OrderItem', back_populates='order', lazy='dynamic')

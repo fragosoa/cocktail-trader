@@ -2,6 +2,8 @@ import os
 from app import create_app
 from app.extensions import db
 from app.models import Drink, Order, Table, OrderItem, PriceHistory
+from app.models.order_item import ItemStatus
+
 import uuid
 
 def init_db():
@@ -37,12 +39,6 @@ def init_db():
         for drink in drinks:
             item = OrderItem(drink=drink, quantity=2, unit_price=drink.price, order=new_order, locked_price_used=False)
             new_order.items.append(item)
-            '''price_history = PriceHistory(
-                drink=drink,
-                price=drink.price,
-                quantity=item.quantity
-            )
-            drink.price_history.append(price_history)'''
             print(f"Price history for {drink.name} added with price {drink.price} and quantity {item.quantity}.")
         new_order.calculate_total()
         
